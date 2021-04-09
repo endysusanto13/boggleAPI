@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error 404 - The page you were looking for doesn't exist</title>
+  <style>
+    .error_page {
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .error_page h1 {
+    color: #1C96F8;
+    font-size: 600%;
+    margin-top: 1%;
+    margin-bottom:0px;
+    padding:0px;
+    }
+
+    .error_page h2 {
+    color: #192480;
+    font-size: 300%;
+    margin:0px;
+    padding:0px;
+    }
+
+    .error_page p {
+    font-size: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="error_page">
+    <h1>404</h1>
+    <h2>PAGE NOT FOUND</h2>
+    <h3><%= @name %></h3>
+    <p>The page you were looking for doesn't exist.</p>
+    <p>You may have mistyped the address or the page may have moved.</p>
+  </div>
+</body>
+</html>
