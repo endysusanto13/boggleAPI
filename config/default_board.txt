@@ -1,2 +1,5 @@
 T, A, P, *, E, A, K, S, O, B, R, S, S, *, X, D
 
+- This file is the configuration for default board when random setting is not enabled and player did not specify the board
+- Only the first line will be read by the code
+- There shoud only be comma ',' or whitespace ' ' that separates the letters in the first line
