@@ -2,29 +2,34 @@ class Boggle
   def initialize(unprocessed_string)
     @row, @col = 4, 4                                                                     # Number of rows and column of the board
     @total_letters = @row * @col
-    verify_number_of_letters(unprocessed_string) ? (@board = generate_board(unprocessed_string)) : (puts "Invalid number of letters.")
+    
+    letter_string = check_board_type(unprocessed_string)
+    letter_string.length == @total_letters ? (@board = generate_board(letter_string)) : (puts "Invalid number of letters.")
   end
   
   def remove_characters_from_string(string_with_characters)
     letter_string = string_with_characters.tr(",", "").tr(" ", "").tr("\n", "").upcase    # Convert default board string to an array. Single quote ("") cannot be used to remove \n from .txt file
   end
   
-  def verify_number_of_letters(unprocessed_string)
-    remove_characters_from_string(unprocessed_string).length == @total_letters ? true : false
+  def check_board_type(unprocessed_string)                                                # Check whether use random board or default board or user's input
+    letter_string = remove_characters_from_string(unprocessed_string)
+    
+    case letter_string
+    when "RANDOM" 
+      return create_random_string()
+    when ""
+      return default_board_string()
+    else
+      return letter_string
+    end
   end
 
-  def create_empty_board()
-    empty_board = Array.new(@total_letters)
-  end
-  
   def insert_letters_to_board(empty_board, letter_string)
-    empty_board.each_with_index { |value, index| empty_board[index] = letter_string[index]}
-    return empty_board
+    empty_board.map.with_index { |box, index| empty_board[index] = letter_string[index] }
   end
     
-  def generate_board(unprocessed_string)
-    empty_board = create_empty_board()
-    letter_string = remove_characters_from_string(unprocessed_string)
+  def generate_board(letter_string)
+    empty_board = Array.new(@total_letters)
     board_with_letters = insert_letters_to_board(empty_board, letter_string)
   end
   
@@ -35,18 +40,24 @@ class Boggle
     end
   end
 
+  def create_random_string()
+    alphabets = ('A'..'Z').map(&:to_s) << "*"
+    random_string = (0...@total_letters).map { alphabets[rand(alphabets.length)] }.join
+  end
+
+  def default_board_string()
+    default_board_txt = IO.readlines("../config/default_board.txt")[0]               # Load default board game
+    remove_characters_from_string(default_board_txt)
+  end
 end
 
-def read_default_board()
-  default_board_txt = IO.readlines("../config/default_board.txt")[0]               # Load default board game
-end
-
-board_1 = Boggle.new("A B C D, E F G H, I J K ,,L, s O Pq")
+board_1 = Boggle.new("A B C,,, D, E F G H, I J K ,,L, s O Pq")
 board_1.print_board()
 
-board_2 = Boggle.new(read_default_board())
+board_2 = Boggle.new("")
 board_2.print_board()
 
-
+board_3 = Boggle.new("random")
+board_3.print_board()
 
 
