@@ -1,6 +1,6 @@
-require 'rack'
-require_relative '../config/template.rb'
-require_relative '../config/routes.rb'
+require "rack"
+require_relative "../config/template.rb"
+require_relative "../config/routes.rb"
 
 class Application
   def call(env)

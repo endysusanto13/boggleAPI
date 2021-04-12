@@ -24,6 +24,16 @@ class Boggle
     end
   end
 
+  def create_random_string()
+    alphabets = ('A'..'Z').map(&:to_s) << "*"
+    random_string = (0...@total_letters).map { alphabets[rand(alphabets.length)] }.join
+  end
+
+  def default_board_string()
+    default_board_txt = IO.readlines("../config/default_board.txt")[0]               # Load default board game
+    remove_characters_from_string(default_board_txt)
+  end
+
   def insert_letters_to_board(empty_board, letter_string)
     empty_board.map.with_index { |box, index| empty_board[index] = letter_string[index] }
   end
@@ -40,24 +50,23 @@ class Boggle
     end
   end
 
-  def create_random_string()
-    alphabets = ('A'..'Z').map(&:to_s) << "*"
-    random_string = (0...@total_letters).map { alphabets[rand(alphabets.length)] }.join
+  def get_board()
+    @board
   end
 
-  def default_board_string()
-    default_board_txt = IO.readlines("../config/default_board.txt")[0]               # Load default board game
-    remove_characters_from_string(default_board_txt)
+  def get_row()
+    @row
   end
+
+  def get_col()
+    @col
+  end
+
 end
 
 board_1 = Boggle.new("A B C,,, D, E F G H, I J K ,,L, s O Pq")
 board_1.print_board()
 
-board_2 = Boggle.new("")
-board_2.print_board()
-
-board_3 = Boggle.new("random")
+board_3 = Boggle.new("")
 board_3.print_board()
-
 
