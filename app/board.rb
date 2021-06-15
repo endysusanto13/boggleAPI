@@ -1,17 +1,21 @@
 class Boggle
+  attr_reader :board, :row, :col, :total_letters, :letter_position_hash
+  
   def initialize(unprocessed_string)
     @row, @col = 4, 4                                                                     # Number of rows and column of the board
     @total_letters = @row * @col
     
     letter_string = remove_characters_from_string(unprocessed_string)
-    generate_board(letter_string)
+    puts "Invalid input to the board" unless generate_board(letter_string)
   end
   
   def remove_characters_from_string(string_with_characters)
-    string_with_characters.tr(",", "").tr(" ", "").tr("\n", "").upcase    # Single quote ("") cannot be used to remove \n from .txt file
+    string_with_characters.tr(",", "").tr(" ", "").tr("\n", "").upcase
+    # Single quote ("") cannot be used to remove \n from .txt file
   end
   
-  def generate_board(letter_string)                                                # Perform check whether use random board or default board or user's input
+  # Perform check whether use random board or default board or user's input
+  def generate_board(letter_string)
     
     case letter_string
     when "RANDOM" 
@@ -25,7 +29,7 @@ class Boggle
   end
 
   def create_random_string()
-    alphabets = ('A'..'Z').map(&:to_s) << "*"
+    alphabets = ('A'..'Z').map(&:to_s) << "*"                                       # Convert ranges to string then add *
     (0...@total_letters).map { alphabets[rand(alphabets.length)] }.join
   end
 
@@ -35,38 +39,40 @@ class Boggle
   end
   
   def print_board()
-    (0...@row).each_with_index do |value, row_index|
-      (0...@col).each_with_index { |value, col_index| print "#{@board[col_index + (row_index*@row)]} " }
-      print "\n"
+    (0...@total_letters).each do |value|
+      puts "\n" if value % @col == 0
+      print "#{@board[value]} "
     end
+    puts "\n\n"
   end
 
-  # FIXME - Use attr_accessor
-  def get_board()
-    @board
-  end
+  def store_board_to_hash_table()
+    # Create hash table with A-Z and *
+    array = ("A".."Z").to_a << "*"
+    @letter_position_hash = array.to_h {|letter| [letter, []]}
 
-  def get_row()
-    @row
-  end
+    # Store the position of letters on the board to the hash
+    (0...@total_letters).each do |value|
+      @letter_position_hash[@board[value]].append(value)
+    end
 
-  def get_col()
-    @col
   end
 
 end
 
 # Test
 
-board_1 = Boggle.new("A B C,,, D, E F G H, I J K ,,L, s O Pq")
-board_1.print_board()
-puts "\n"
+# board_1 = Boggle.new("A B C,,, D, E F G H, I J K ,,L, s O Pq")
+# board_1.print_board()
 
-board_3 = Boggle.new("")
-board_3.print_board()
-puts "\n"
+# board_3 = Boggle.new("")
+# board_3.print_board()
 
-board_4 = Boggle.new("RANDOM")
-board_4.print_board()
-puts "\n"
+# board_4 = Boggle.new("RANDOM")
+# board_4.print_board()
+
+board_5 = Boggle.new("A C E D L U G * E * H T G A F K")
+board_5.print_board()
+board_5.store_board_to_hash_table()
+puts board_5.letter_position_hash
 
