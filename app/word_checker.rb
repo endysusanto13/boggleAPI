@@ -6,122 +6,113 @@ class WordChecker
     @row = row
     @col = col
     @total_letters = @row * @col
-
-    @first_row = (0...@col).to_a
-    @last_row = ((@total_letters-@col)...@total_letters).to_a
-    
-    @first_col = []
-    (0...@total_letters).each { |num| @first_col << num if (num % @col == 0) }
-    
-    @last_col = []
-    (0...@total_letters).each { |num| @last_col << num if ((num + 1) % @col == 0) }
-
-    @memory = Array.new(0)          # Store letters that has been searched
-  end
-  
-  def store_searched_letters(word_index, letter_position)
-    if @memory[word_index].nil?
-      inner_memory = Array.new(0)               
-      inner_memory << letter_position
-      @memory << inner_memory                   # Create nested array. Inner array is to store position of letter that has been searched.
-    else
-      @memory[word_index] << letter_position
-    end
-    
-    print "Current memory is #{@memory}\n\n"
-    # Remember to empty the hash at the end of search with hash.clear
   end
 
-  def verify_word(word, board)
-    @board = board
+  def verify_word_dictionary(word)
+    ($dictionary.include? word) ? (puts "Word exist in English dictionary.") : (puts "Word does not exist in English dictionary.")
+  end
 
-    ($dictionary.include? word) ? word_index = 0 : word_index = -1            # Words in dictionary are lower case
-    word = word.upcase
-    nested_array_letters = Array.new(0)
-    nested_array_letters << (0...@total_letters).to_a    
+  # Main function to verify whether a word can be formed on the board.
+  # The function relies on hash table. The position on the board is stored on hash table which is passed to this function.
+  def verify_word_on_board(word, letter_position_hash)
+    word = word.upcase            # Since the letters on board is in capital letter
     
-    until word_index < 0 do
-      puts "Word index is #{word_index}\n\n"
-      
-      letter_position = check_current_letter(word[word_index], nested_array_letters[word_index], word_index)
-      puts "letter position is #{letter_position}"
+    i = 0
+    while i >= 0 && i < word.length
+      prev_search = @total_letters if i == 0
+      puts "\nStart of while loop, prev_search is #{prev_search} and i is #{i}" ###
+      move = false
 
-      if letter_position
-        store_searched_letters(word_index, letter_position)
-        word_index += 1
-        nested_array_letters[word_index] = check_adjacent_letters(letter_position)
-        print "Nested array at word index #{word_index} is #{nested_array_letters[word_index]}\n\n"
+      unless letter_position_hash[word[i]].empty?
+        pos_arr = letter_position_hash[word[i]]
+        print "Letter #{word[i]} exist at #{pos_arr}\n" ###
 
-      else
-        @memory[word_index] = []
-        word_index -= 1
-        print "Memory is #{@memory}\n\n"
-        print "Nested array at word index #{word_index} is #{nested_array_letters[word_index]}\n\n"
-      end    
-      
-      if word_index > (word.length - 1)
-        puts "#{word} exist!"
-        break
+        pos_arr.each_with_index do | value , index |
+          puts "Scanning through #{word[i]} at position #{value}" ###
+
+          if value >= 0
+            # The position is subtrated by no of total letters to indicate that it has been searched.
+            # No of total letters is used so that duplicate of hash table is not required.
+            letter_position_hash[word[i]][index] -= @total_letters            # Unable to use position variable here as it will not modify value in hash
+            puts "#{value} has been subracted by @total_letters to #{letter_position_hash[word[i]][index]}"
+            if prev_search == @total_letters || is_adjacent(letter_position_hash[word[i]][index],letter_position_hash[word[i-1]][prev_search])
+              prev_search = index
+              puts "Moving to next letter, prev_search now has been updated to #{prev_search}" ###
+              i += 1
+              move = true
+              break
+            end
+
+          end
+        end
+
+        if move == false
+          print "Hash undergoing restoration, current value is #{letter_position_hash[word[i]]}\n" ###
+          letter_position_hash[word[i]].each_with_index do | value , index |
+            letter_position_hash[word[i]][index] += @total_letters if value < 0
+          end
+          print "Hash completed restoration, current value is #{letter_position_hash[word[i]]}\n" ###
+
+
+        end
+
       end
       
+      # i -= 1 if move == false
+      if move == false
+        puts "Letter #{word[i]} is not available/not adjacent and i will be subtracted"
+        i -= 1
+      end
     end
-    @memory = []          # Reset memory for other searches
-  end
-  
-  def check_current_letter(letter, array_letters, word_index)
-    puts "Searching for #{letter}..."
-    position = false
-   
-    array_letters.each do |index|
-      puts "Checking index #{index}..."
-      puts "Position is #{position}"
-      return position if position
-        if @board[index].include? letter
-          position = index
-          
-          if @memory[word_index]  #FIXME
-            if @memory[word_index].include? index
-              position = false
-            end
-          end
-        else
-          position = false
-        end
+
+    if i >= 0 
+      puts "#{word} exists!"
+      return true
+    else
+      puts "#{word} is not available."
+      return false
     end
-    
-    puts "Found #{letter} at position #{position}"
-  
   end
 
-  def check_adjacent_letters(letter_index)
-    adjacent_letter_positions = Array.new(0)
-
-    # Store adjacent letters in an array        #FIXME
-    adjacent_letter_positions << letter_index-(@col+1) unless (@first_row + @first_col).include? letter_index # top left letter
-    adjacent_letter_positions << letter_index-@col     unless @first_row.include? letter_index                # up letter
-    adjacent_letter_positions << letter_index-(@col-1) unless (@first_row + @last_col).include? letter_index  # top right letter
-    adjacent_letter_positions << letter_index-1        unless @first_col.include? letter_index                # left letter
-    adjacent_letter_positions << letter_index+1        unless @last_col.include? letter_index                 # right letter
-    adjacent_letter_positions << letter_index+(@col-1) unless (@last_row + @first_col).include? letter_index  # bottom left letter
-    adjacent_letter_positions << letter_index+@col     unless @last_row.include? letter_index                 # down letter
-    adjacent_letter_positions << letter_index+(@col+1) unless (@last_row + @last_col).include? letter_index   # bottom right letter
-    
-    print "Adjacent letters are #{adjacent_letter_positions}\n\n"
-    return adjacent_letter_positions
-    # Change this to return position of adjacent letters
+  # Function that takes 2 integer numbers and verifies whether they are adjacent on the board
+  def is_adjacent(letter_pos1, letter_pos2)
+    puts "#{letter_pos1} is being subtracted by #{letter_pos2}..."
+    case (letter_pos1 - letter_pos2).abs
+    when 1
+      return true
+    when @col
+      return true
+    when @col + 1
+      return true
+    when @col - 1
+      return true
+    else
+      return false
+    end
   end
+
+    
+
+
 end
 
+input = "gene"
 
-input = "soaps"
-
-board_2 = Boggle.new("T A P *  E A K S  O A R S  S * O D")
-board_2.print_board()
-board2 = board_2.get_board()
+# board_5 = Boggle.new("A C E D L U G * E * H T G A F K")
+# board_5 = Boggle.new("A C E D L U G X E N H T G A F K")     # Without wildcard *
+board_5 = Boggle.new("A C E D L U G X E N H T G N F K")     # Special case for GENE Without wildcard *
+board_5.print_board()
+board_5.store_board_to_hash_table()
+# puts board_5.letter_position_hash
+# puts board_5.board
 
 checker4x4 = WordChecker.new(4,4)
-checker3x5 = WordChecker.new(3,5)
+checker4x4.verify_word_dictionary(input)
+checker4x4.verify_word_on_board(input, board_5.letter_position_hash)
 
-puts "\n"
 
-checker4x4.verify_word(input, board2)
+
+
+
+
+
